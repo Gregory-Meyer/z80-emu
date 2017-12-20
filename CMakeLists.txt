@@ -10,8 +10,14 @@ add_executable(emulator src/emulator.cpp src/timer.cpp)
 target_link_libraries(emulator ${Boost_LIBRARIES} Threads::Threads)
 target_compile_features(emulator PUBLIC cxx_std_17)
 
-add_executable(timer_test test/test_timer.cpp src/timer.cpp)
-target_link_libraries(timer_test ${Boost_LIBRARIES} Threads::Threads)
-target_compile_features(timer_test PUBLIC cxx_std_17)
+add_executable(test_timer test/test_timer.cpp src/timer.cpp)
+target_link_libraries(test_timer ${Boost_LIBRARIES} Threads::Threads)
+target_compile_features(test_timer PUBLIC cxx_std_17)
 
-set_target_properties(emulator timer_test PROPERTIES CXX_EXTENSIONS OFF)
+add_executable(test_register_pair
+			   test/test_register_pair.cpp src/register_pair.cpp)
+target_link_libraries(test_timer Threads::Threads)
+target_compile_features(test_timer PUBLIC cxx_std_17)
+
+set_target_properties(emulator test_timer test_register_pair
+					  PROPERTIES CXX_EXTENSIONS OFF)
