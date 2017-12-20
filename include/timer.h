@@ -1,7 +1,9 @@
 // timer class that will periodically execute a callback function
 
+#include <cstddef>
 #include <functional>
 #include <chrono>
+#include <atomic>
 
 #include <boost/asio/high_resolution_timer.hpp>
 
@@ -18,6 +20,8 @@ public:
 
 	~Timer();
 
+	auto executions() const noexcept -> std::size_t;
+
 private:
 	auto bootstrap() -> void;
 
@@ -29,6 +33,7 @@ private:
 	Duration_t period_;
 	boost::asio::io_service service_;
 	boost::asio::high_resolution_timer timer_;
+	std::atomic<std::size_t> executions_;
 };
 
 } // namespace z80

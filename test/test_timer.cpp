@@ -17,5 +17,7 @@ auto main(const int argc, const char *argv[]) -> int {
 			}
 
 			std::cout << '\n';
-		}, 1s };
+		}, 50ms };
+
+	while (timer.executions() < 10) { }
 }
