@@ -41,16 +41,17 @@ auto z80::Timer::start() -> void {
 }
 
 auto z80::Timer::run_callback(const boost::system::error_code &error) -> void {
-	if (error) {
+	if (error == boost::asio::error::operation_aborted) {
+		return;
+	} else if (error) {
 		throw std::system_error{
 			std::make_error_code(static_cast<std::errc>(error.value())),
 			"Timer::run_callback"
 		};
 	}
 
-	callback_();
-	++executions_;
-
 	timer_.expires_from_now(period_);
 	start();
+	++executions_;
+	callback_();
 }
