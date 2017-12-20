@@ -1,5 +1,8 @@
 // timer class that will periodically execute a callback function
 
+#ifndef GREGJM_Z80_TIMER_H
+#define GREGJM_Z80_TIMER_H
+
 #include <cstddef>
 #include <functional>
 #include <chrono>
@@ -37,3 +40,5 @@ private:
 };
 
 } // namespace z80
+
+#endif
