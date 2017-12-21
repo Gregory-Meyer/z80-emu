@@ -1,6 +1,6 @@
 // 16 bit register
 // can be accessed as one 16-bit register or two 8-bit registers
-// uses atomic underlying representation to avoid issues and stuff
+// uses atomic underlying representation to avoid data races
 
 #ifndef GREGJM_Z80_REGISTER_PAIR_H
 #define GREGJM_Z80_REGISTER_PAIR_H
@@ -17,7 +17,80 @@ using UnsignedHalfRegister_t = std::uint8_t;
 
 class RegisterPair {
 public:
-	class UpperReference {
+	class Reference {
+	public:
+		friend RegisterPair;
+
+		Reference() = delete;
+
+		Reference(const Reference &other) = default;
+
+		Reference(Reference &&other) = default;
+
+		auto operator=(const Reference &other) -> Reference& = delete;
+
+		auto operator=(Reference &&other) -> Reference& = delete;
+
+		auto operator=(const UnsignedHalfRegister_t value) noexcept
+			-> Reference&;
+
+		auto operator=(const SignedHalfRegister_t value) noexcept -> Reference&;
+
+		virtual ~Reference();
+
+		explicit operator UnsignedHalfRegister_t() const noexcept;
+
+		explicit operator SignedHalfRegister_t() const noexcept;
+
+		virtual auto set(const UnsignedHalfRegister_t value) noexcept
+			-> void = 0;
+
+		virtual auto set(const SignedHalfRegister_t value) noexcept
+			-> void = 0;
+
+		virtual auto get_unsigned() const noexcept
+			-> UnsignedHalfRegister_t = 0;
+
+		virtual auto get_signed() const noexcept -> SignedHalfRegister_t = 0;
+
+	private:
+		explicit Reference(RegisterPair &parent) noexcept;
+
+		RegisterPair &parent_;
+	};
+
+	class ConstReference {
+	public:
+		friend RegisterPair;
+
+		ConstReference() = delete;
+
+		ConstReference(const ConstReference &other) = default;
+
+		ConstReference(ConstReference &&other) = default;
+
+		auto operator=(const ConstReference &other) -> ConstReference& = delete;
+
+		auto operator=(ConstReference &&other) -> ConstReference& = delete;
+
+		virtual ~ConstReference();
+
+		explicit operator UnsignedHalfRegister_t() const noexcept;
+
+		explicit operator SignedHalfRegister_t() const noexcept;
+
+		virtual auto get_unsigned() const noexcept
+			-> UnsignedHalfRegister_t = 0;
+
+		virtual auto get_signed() const noexcept -> SignedHalfRegister_t = 0;
+
+	private:
+		explicit ConstReference(const RegisterPair &parent) noexcept;
+
+		const RegisterPair &parent_;
+	};
+
+	class UpperReference final : public Reference {
 	public:
 		friend RegisterPair;
 
@@ -31,31 +104,19 @@ public:
 
 		auto operator=(UpperReference &&other) -> UpperReference& = delete;
 
-		auto operator=(const UnsignedHalfRegister_t value) noexcept
-			-> UpperReference&;
+		auto set(const UnsignedHalfRegister_t value) noexcept -> void override;
 
-		auto operator=(const SignedHalfRegister_t value) noexcept
-			-> UpperReference&;
+		auto set(const SignedHalfRegister_t value) noexcept -> void override;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t override;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
-
-		auto set(const UnsignedHalfRegister_t value) noexcept -> void;
-
-		auto set(const SignedHalfRegister_t value) noexcept -> void;
-
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
-
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> SignedHalfRegister_t override;
 
 	private:
 		explicit UpperReference(RegisterPair &parent) noexcept;
-
-		RegisterPair &parent_;
 	};
 
-	class ConstUpperReference {
+	class ConstUpperReference final : public ConstReference {
 	public:
 		friend RegisterPair;
 
@@ -71,21 +132,15 @@ public:
 		auto operator=(ConstUpperReference &&other)
 			-> ConstUpperReference& = delete;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t override;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
-
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
-
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> SignedHalfRegister_t override;
 
 	private:
 		explicit ConstUpperReference(const RegisterPair &parent) noexcept;
-
-		const RegisterPair &parent_;
 	};
 
-	class LowerReference {
+	class LowerReference final : public Reference {
 	public:
 		friend RegisterPair;
 
@@ -99,31 +154,19 @@ public:
 
 		auto operator=(LowerReference &&other) -> LowerReference& = delete;
 
-		auto operator=(const UnsignedHalfRegister_t value) noexcept
-			-> LowerReference&;
+		auto set(const UnsignedHalfRegister_t value) noexcept -> void override;
 
-		auto operator=(const SignedHalfRegister_t value) noexcept
-			-> LowerReference&;
+		auto set(const SignedHalfRegister_t value) noexcept -> void override;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t override;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
-
-		auto set(const UnsignedHalfRegister_t value) noexcept -> void;
-
-		auto set(const SignedHalfRegister_t value) noexcept -> void;
-
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
-
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> SignedHalfRegister_t override;
 
 	private:
 		explicit LowerReference(RegisterPair &parent) noexcept;
-
-		RegisterPair &parent_;
 	};
 
-	class ConstLowerReference {
+	class ConstLowerReference final : public ConstReference {
 	public:
 		friend RegisterPair;
 
@@ -133,24 +176,12 @@ public:
 
 		ConstLowerReference(ConstLowerReference &&other) = default;
 
-		auto operator=(const ConstLowerReference &other)
-			-> ConstLowerReference& = delete;
+		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t override;
 
-		auto operator=(ConstLowerReference &&other)
-			-> ConstLowerReference& = delete;
-
-		explicit operator UnsignedHalfRegister_t() const noexcept;
-
-		explicit operator SignedHalfRegister_t() const noexcept;
-
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
-
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> SignedHalfRegister_t override;
 
 	private:
 		explicit ConstLowerReference(const RegisterPair &parent) noexcept;
-
-		const RegisterPair &parent_;
 	};
 
 	RegisterPair() noexcept;
