@@ -8,6 +8,10 @@ z80::RegisterPair::RegisterPair(const RegisterPair &other) noexcept
 	: data_{ other.data_.load() }
 { }
 
+z80::RegisterPair::RegisterPair(RegisterPair &&other) noexcept
+	: data_{ other.data_.load() }
+{ }
+
 z80::RegisterPair::RegisterPair(const UnsignedRegister_t value) noexcept
 	: data_{ value }
 { }
@@ -49,6 +53,12 @@ z80::RegisterPair::RegisterPair(
 }
 
 auto z80::RegisterPair::operator=(const RegisterPair &other) noexcept -> RegisterPair& {
+	data_ = other.data_.load();
+
+	return *this;
+}
+
+auto z80::RegisterPair::operator=(RegisterPair &&other) noexcept -> RegisterPair& {
 	data_ = other.data_.load();
 
 	return *this;
@@ -166,53 +176,33 @@ auto z80::RegisterPair::get_lower_signed() const noexcept
 	return byte_cast<SignedHalfRegister_t>(get_lower_unsigned());
 }
 
-auto z80::RegisterPair::Reference::operator=(
+auto z80::RegisterPair::UpperReference::operator=(
 	const UnsignedHalfRegister_t value
-) noexcept -> Reference& {
+) noexcept -> UpperReference& {
 	set(value);
 
 	return *this;
 }
 
-auto z80::RegisterPair::Reference::operator=(
+auto z80::RegisterPair::UpperReference::operator=(
 	const SignedHalfRegister_t value
-) noexcept -> Reference& {
+) noexcept -> UpperReference& {
 	set(value);
 
 	return *this;
 }
 
-z80::RegisterPair::Reference::~Reference() { }
-
-z80::RegisterPair::Reference::operator UnsignedHalfRegister_t() const noexcept {
-	return get_unsigned();
-}
-
-z80::RegisterPair::Reference::operator SignedHalfRegister_t() const noexcept {
-	return get_signed();
-}
-
-z80::RegisterPair::Reference::Reference(RegisterPair &parent) noexcept
-	: parent_{ parent }
-{ }
-
-z80::RegisterPair::ConstReference::~ConstReference() { }
-
-z80::RegisterPair::ConstReference::operator UnsignedHalfRegister_t()
+z80::RegisterPair::UpperReference::operator UnsignedHalfRegister_t()
 	const noexcept
 {
 	return get_unsigned();
 }
 
-z80::RegisterPair::ConstReference::operator SignedHalfRegister_t()
+z80::RegisterPair::UpperReference::operator SignedHalfRegister_t()
 	const noexcept
 {
 	return get_signed();
 }
-
-z80::RegisterPair::ConstReference::ConstReference(
-	const RegisterPair &parent
-) noexcept : parent_{ parent } { }
 
 auto z80::RegisterPair::UpperReference::set(
 	const UnsignedHalfRegister_t value
@@ -240,7 +230,19 @@ auto z80::RegisterPair::UpperReference::get_signed() const noexcept
 
 z80::RegisterPair::UpperReference::UpperReference(
 	RegisterPair &parent
-) noexcept : Reference{ parent } { }
+) noexcept : parent_{ parent } { }
+
+z80::RegisterPair::ConstUpperReference::operator UnsignedHalfRegister_t()
+	const noexcept
+{
+	return get_unsigned();
+}
+
+z80::RegisterPair::ConstUpperReference::operator SignedHalfRegister_t()
+	const noexcept
+{
+	return get_signed();
+}
 
 auto z80::RegisterPair::ConstUpperReference::get_unsigned() const noexcept
 	-> UnsignedHalfRegister_t
@@ -256,7 +258,35 @@ auto z80::RegisterPair::ConstUpperReference::get_signed() const noexcept
 
 z80::RegisterPair::ConstUpperReference::ConstUpperReference(
 	const RegisterPair &parent
-) noexcept : ConstReference{ parent } { }
+) noexcept : parent_{ parent } { }
+
+auto z80::RegisterPair::LowerReference::operator=(
+	const UnsignedHalfRegister_t value
+) noexcept -> LowerReference& {
+	set(value);
+
+	return *this;
+}
+
+auto z80::RegisterPair::LowerReference::operator=(
+	const SignedHalfRegister_t value
+) noexcept -> LowerReference& {
+	set(value);
+
+	return *this;
+}
+
+z80::RegisterPair::LowerReference::operator UnsignedHalfRegister_t()
+	const noexcept
+{
+	return get_unsigned();
+}
+
+z80::RegisterPair::LowerReference::operator SignedHalfRegister_t()
+	const noexcept
+{
+	return get_signed();
+}
 
 auto z80::RegisterPair::LowerReference::set(
 	const UnsignedHalfRegister_t value
@@ -284,7 +314,19 @@ auto z80::RegisterPair::LowerReference::get_signed() const noexcept
 
 z80::RegisterPair::LowerReference::LowerReference(
 	RegisterPair &parent
-) noexcept : Reference{ parent } { }
+) noexcept : parent_{ parent } { }
+
+z80::RegisterPair::ConstLowerReference::operator UnsignedHalfRegister_t()
+	const noexcept
+{
+	return get_unsigned();
+}
+
+z80::RegisterPair::ConstLowerReference::operator SignedHalfRegister_t()
+	const noexcept
+{
+	return get_signed();
+}
 
 auto z80::RegisterPair::ConstLowerReference::get_unsigned() const noexcept
 	-> UnsignedHalfRegister_t
@@ -300,4 +342,4 @@ auto z80::RegisterPair::ConstLowerReference::get_signed() const noexcept
 
 z80::RegisterPair::ConstLowerReference::ConstLowerReference(
 	const RegisterPair &parent
-) noexcept : ConstReference{ parent } { }
+) noexcept : parent_{ parent } { }
