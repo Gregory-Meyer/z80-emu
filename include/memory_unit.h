@@ -2,7 +2,6 @@
 #define GREGJM_Z80_MEMORY_UNIT_H
 
 #include "exceptions.h"
-#include "register_pair.h"
 #include "types.hpp"
 
 #include <cstddef>
@@ -32,7 +31,7 @@ public:
 	// mutable reference to a contiguous slice of memory in a MemoryUnit
 	class MutableSlice;
 
-	static constexpr auto DEFAULT_SIZE = static_cast<usize>(1 << 16);
+	static constexpr auto DEFAULT_SIZE = static_cast<usize>((1 << 16) - 1);
 
 	MemoryUnit() = default;
 
@@ -79,10 +78,12 @@ public:
 	// returns the number of bytes in this MemoryUnit
 	auto size() const noexcept -> SizeT;
 
-private:
-	auto operator[](SizeT address) noexcept -> ValueT&;
+	auto max_size() const noexcept -> SizeT;
 
-	auto operator[](SizeT address) const noexcept -> const ValueT&;
+private:
+	auto operator[](SizeT address) -> ValueT&;
+
+	auto operator[](SizeT address) const -> const ValueT&;
 
 	auto at(SizeT address) -> ValueT&;
 
@@ -182,25 +183,47 @@ public:
 	friend MemoryUnit;
 
 	using iterator = const ValueT*;
+	using const_iterator = const ValueT*;
 	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	Slice(MutableSlice mut_slice);
+	// implicit conversion constructor
+	Slice(MutableSlice mut_slice) noexcept;
+
+	// throws OutOfBoundsExceptioon if pos >= size
+	auto at(SizeT pos) const -> const ValueT&;
+
+	auto operator[](SizeT pos) const -> const ValueT&;
+
+	auto front() const -> const ValueT&;
+
+	auto back() const -> const ValueT&;
+
+	auto data() const noexcept -> const ValueT*;
 
 	auto begin() const noexcept -> iterator;
 
+	auto cbegin() const noexcept -> const_iterator;
+
 	auto end() const noexcept -> iterator;
+
+	auto cend() const noexcept -> const_iterator;
 
 	auto rbegin() const noexcept -> reverse_iterator;
 
+	auto crbegin() const noexcept -> const_reverse_iterator;
+
 	auto rend() const noexcept -> reverse_iterator;
+
+	auto crend() const noexcept -> const_reverse_iterator;
 
 	auto empty() const noexcept -> bool;
 
 	auto size() const noexcept -> SizeT;
 
-	auto operator[](const SizeT offset) const noexcept -> const ValueT&;
+	auto max_size() const noexcept -> SizeT;
 
-	auto at(const SizeT offset) const -> const ValueT&;
+	auto swap(Slice &other) noexcept -> void;
 
 private:
 	Slice(const MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
@@ -216,23 +239,44 @@ public:
 	friend Slice;
 
 	using iterator = ValueT*;
+	using const_iterator = const ValueT*;
 	using reverse_iterator = std::reverse_iterator<iterator>;
+	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+	// throws OutOfBoundsExceptioon if pos >= size
+	auto at(SizeT pos) const -> ValueT&;
+
+	auto operator[](SizeT pos) const -> ValueT&;
+
+	auto front() const -> ValueT&;
+
+	auto back() const -> ValueT&;
+
+	auto data() const noexcept -> ValueT*;
 
 	auto begin() const noexcept -> iterator;
 
+	auto cbegin() const noexcept -> const_iterator;
+
 	auto end() const noexcept -> iterator;
+
+	auto cend() const noexcept -> const_iterator;
 
 	auto rbegin() const noexcept -> reverse_iterator;
 
+	auto crbegin() const noexcept -> const_reverse_iterator;
+
 	auto rend() const noexcept -> reverse_iterator;
+
+	auto crend() const noexcept -> const_reverse_iterator;
 
 	auto empty() const noexcept -> bool;
 
 	auto size() const noexcept -> SizeT;
 
-	auto operator[](const SizeT offset) const noexcept -> ValueT&;
+	auto max_size() const noexcept -> SizeT;
 
-	auto at(const SizeT offset) const -> ValueT&;
+	auto swap(MutableSlice &other) noexcept -> void;
 
 private:
 	MutableSlice(MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
@@ -246,6 +290,11 @@ auto swap(MemoryUnit::Address &lhs, MemoryUnit::Address &rhs) noexcept -> void;
 
 auto swap(MemoryUnit::MutableAddress &lhs,
           MemoryUnit::MutableAddress &rhs) noexcept -> void;
+
+auto swap(MemoryUnit::Slice &lhs, MemoryUnit::Slice &rhs) noexcept -> void;
+
+auto swap(MemoryUnit::MutableSlice &lhs,
+          MemoryUnit::MutableSlice &rhs) noexcept -> void;
 
 auto operator==(MemoryUnit::Address lhs,
                 MemoryUnit::Address rhs) noexcept -> bool;

@@ -77,6 +77,10 @@ auto z80::MemoryUnit::size() const noexcept -> SizeT {
 	return static_cast<SizeT>(data_.size());
 }
 
+auto z80::MemoryUnit::max_size() const noexcept -> SizeT {
+	return std::numeric_limits<SizeT>::max();
+}
+
 auto z80::MemoryUnit::data() noexcept -> ValueT* {
 	return data_.data();
 }
@@ -85,13 +89,13 @@ auto z80::MemoryUnit::data() const noexcept -> const ValueT* {
 	return data_.data();
 }
 
-auto z80::MemoryUnit::operator[](const SizeT address) noexcept -> ValueT& {
+auto z80::MemoryUnit::operator[](const SizeT address) -> ValueT& {
 	return data_[address];
 }
 
 auto z80::MemoryUnit::operator[](
 	const SizeT address
-) const noexcept -> const ValueT& {
+) const -> const ValueT& {
 	return data_[address];
 }
 
@@ -174,8 +178,194 @@ z80::MemoryUnit::MutableAddress::MutableAddress(MemoryUnit &parent,
 	: parent_{ &parent }, address_{ address }
 { }
 
+z80::MemoryUnit::Slice::Slice(const MutableSlice mut_slice) noexcept
+	: parent_ { mut_slice.parent_ }, begin_{ mut_slice.begin_ },
+	  end_{ mut_slice.end_ }
+{ }
+
+auto z80::MemoryUnit::Slice::at(const SizeT pos) const -> const ValueT& {
+	if (pos >= size()) {
+		throw OutOfBoundsException{ "Slice::at" };
+	}
+
+	return (*this)[pos];
+}
+
+auto z80::MemoryUnit::Slice::operator[](
+	const SizeT pos
+) const -> const ValueT& {
+	return (*parent_)[static_cast<SizeT>(begin_ + pos)];
+}
+
+auto z80::MemoryUnit::Slice::front() const -> const ValueT& {
+	return (*parent_)[begin_];
+}
+
+auto z80::MemoryUnit::Slice::back() const -> const ValueT& {
+	return (*parent_)[static_cast<SizeT>(end_ - 1)];
+}
+
+auto z80::MemoryUnit::Slice::data() const noexcept -> const ValueT* {
+	return std::addressof((*parent_)[begin_]);
+}
+
+auto z80::MemoryUnit::Slice::begin() const noexcept -> iterator {
+	return cbegin();
+}
+
+auto z80::MemoryUnit::Slice::cbegin() const noexcept -> const_iterator {
+	return std::addressof((*parent_)[begin_]);
+}
+
+auto z80::MemoryUnit::Slice::end() const noexcept -> iterator {
+	return cend();
+}
+
+auto z80::MemoryUnit::Slice::cend() const noexcept -> const_iterator {
+	return std::addressof((*parent_)[end_]);
+}
+
+auto z80::MemoryUnit::Slice::rbegin() const noexcept -> reverse_iterator {
+	return crbegin();
+}
+
+auto z80::MemoryUnit::Slice::crbegin() const noexcept -> const_reverse_iterator {
+	return const_reverse_iterator{ cend() };
+}
+
+auto z80::MemoryUnit::Slice::rend() const noexcept -> reverse_iterator {
+	return crend();
+}
+
+auto z80::MemoryUnit::Slice::crend() const noexcept -> const_reverse_iterator {
+	return const_reverse_iterator{ cbegin() };
+}
+
+auto z80::MemoryUnit::Slice::empty() const noexcept -> bool {
+	return begin_ == end_;
+}
+
+auto z80::MemoryUnit::Slice::size() const noexcept -> SizeT {
+	return static_cast<SizeT>(end_ - begin_);
+}
+
+auto z80::MemoryUnit::Slice::max_size() const noexcept -> SizeT {
+	return std::numeric_limits<SizeT>::max();
+}
+
+auto z80::MemoryUnit::Slice::swap(Slice &other) noexcept -> void {
+	using std::swap;
+
+	swap(parent_, other.parent_);
+	swap(begin_, other.begin_);
+	swap(end_, other.end_);
+}
+
+z80::MemoryUnit::Slice::Slice(const z80::MemoryUnit &parent,
+                              z80::MemoryUnit::SizeT lower,
+                              z80::MemoryUnit::SizeT upper) noexcept
+	: parent_{ &parent }, begin_{ lower }, end_{ upper }
+{ }
+
+auto z80::MemoryUnit::MutableSlice::at(const SizeT pos) const -> ValueT& {
+	if (pos >= size()) {
+		throw OutOfBoundsException{ "Slice::at" };
+	}
+
+	return (*this)[pos];
+}
+
+auto z80::MemoryUnit::MutableSlice::operator[](const SizeT pos) const -> ValueT& {
+	return (*parent_)[pos];
+}
+
+auto z80::MemoryUnit::MutableSlice::front() const -> ValueT& {
+	return (*parent_)[begin_];
+}
+
+auto z80::MemoryUnit::MutableSlice::back() const -> ValueT& {
+	return (*parent_)[static_cast<SizeT>(end_ - 1)];
+}
+
+auto z80::MemoryUnit::MutableSlice::data() const noexcept -> ValueT* {
+	return std::addressof((*parent_)[begin_]);
+}
+
+auto z80::MemoryUnit::MutableSlice::begin() const noexcept -> iterator {
+	return data();
+}
+
+auto z80::MemoryUnit::MutableSlice::cbegin() const noexcept -> const_iterator {
+	return data();
+}
+
+auto z80::MemoryUnit::MutableSlice::end() const noexcept -> iterator {
+	return std::addressof((*parent_)[end_]);
+}
+
+auto z80::MemoryUnit::MutableSlice::cend() const noexcept -> const_iterator {
+	return std::addressof((*parent_)[end_]);
+}
+
+auto z80::MemoryUnit::MutableSlice::rbegin() const noexcept -> reverse_iterator {
+	return reverse_iterator{ end() };
+}
+
+auto z80::MemoryUnit::MutableSlice::crbegin() const noexcept -> const_reverse_iterator {
+	return const_reverse_iterator{ cend() };
+}
+
+auto z80::MemoryUnit::MutableSlice::rend() const noexcept -> reverse_iterator {
+	return reverse_iterator{ begin() };
+}
+
+auto z80::MemoryUnit::MutableSlice::crend() const noexcept -> const_reverse_iterator {
+	return const_reverse_iterator{ cbegin() };
+}
+
+auto z80::MemoryUnit::MutableSlice::empty() const noexcept -> bool {
+	return begin_ == end_;
+}
+
+auto z80::MemoryUnit::MutableSlice::size() const noexcept -> SizeT {
+	return static_cast<SizeT>(end_ - begin_);
+}
+
+auto z80::MemoryUnit::MutableSlice::max_size() const noexcept -> SizeT {
+	return std::numeric_limits<SizeT>::max();
+}
+
+auto z80::MemoryUnit::MutableSlice::swap(MutableSlice &other) noexcept -> void {
+	using std::swap;
+
+	swap(parent_, other.parent_);
+	swap(begin_, other.begin_);
+	swap(end_, other.end_);
+}
+
+z80::MemoryUnit::MutableSlice::MutableSlice(MemoryUnit &parent,
+                                            const SizeT lower,
+                                            const SizeT upper) noexcept
+	: parent_{ &parent }, begin_{ lower }, end_{ upper }
+{ }
+
 auto z80::swap(MemoryUnit::Address &lhs,
-               MemoryUnit::Address &rhs) noexcept -> void {
+                MemoryUnit::Address &rhs) noexcept -> void {
+	lhs.swap(rhs);
+}
+
+auto z80::swap(MemoryUnit::MutableAddress &lhs,
+               MemoryUnit::MutableAddress &rhs) noexcept -> void {
+	lhs.swap(rhs);
+}
+
+auto z80::swap(MemoryUnit::Slice &lhs,
+               MemoryUnit::Slice &rhs) noexcept -> void {
+	lhs.swap(rhs);
+}
+
+auto z80::swap(MemoryUnit::MutableSlice &lhs,
+               MemoryUnit::MutableSlice &rhs) noexcept -> void {
 	lhs.swap(rhs);
 }
 

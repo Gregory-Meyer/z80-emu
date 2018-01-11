@@ -69,6 +69,30 @@ constexpr auto operator""_isize(const unsigned long long value) noexcept -> isiz
 	return static_cast<isize>(value);
 }
 
+constexpr auto operator""_iword(
+	const unsigned long long value
+) noexcept -> WordT {
+	return static_cast<WordT>(value);
+}
+
+constexpr auto operator""_ihalf(
+	const unsigned long long value
+) noexcept -> HalfWordT {
+	return static_cast<HalfWordT>(value);
+}
+
+constexpr auto operator""_uword(
+	const unsigned long long value
+) noexcept -> UnsignedWordT {
+	return static_cast<UnsignedWordT>(value);
+}
+
+constexpr auto operator""_uhalf(
+	const unsigned long long value
+) noexcept -> UnsignedHalfWordT {
+	return static_cast<UnsignedHalfWordT>(value);
+}
+
 //constexpr auto operator""_b(const unsigned long long value) noexcept
 //	-> std::byte
 //{
