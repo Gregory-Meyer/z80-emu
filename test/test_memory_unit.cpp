@@ -71,3 +71,66 @@ SCENARIO("MemoryUnit mutation", "[MemoryUnit]") {
 		}
 	}
 }
+
+SCENARIO("MutableAddress semantics", "[MutableAddress]") {
+	GIVEN("a MemoryUnit and some MutableAddresses") {
+		auto mem = z80::MemoryUnit{ 32 };
+		mem.store(3, 1_uhalf);
+		mem.store(7, 1_uhalf);
+
+		auto addr1 = mem.make_address(0);
+		auto addr2 = mem.make_address(3);
+		auto addr3 = mem.make_address(7);
+
+		THEN("they evaluate true") {
+			CHECK(static_cast<bool>(addr1));
+			CHECK(static_cast<bool>(addr2));
+			CHECK(static_cast<bool>(addr3));
+		}
+
+		THEN("they compare as expected") {
+			CHECK_FALSE(addr1 == addr2);
+			CHECK(addr1 != addr2);
+			CHECK(addr1 < addr2);
+			CHECK(addr1 <= addr2);
+			CHECK_FALSE(addr1 > addr2);
+			CHECK_FALSE(addr1 >= addr2);
+
+			CHECK_FALSE(addr1 == addr3);
+			CHECK(addr1 != addr3);
+			CHECK(addr1 < addr3);
+			CHECK(addr1 <= addr3);
+			CHECK_FALSE(addr1 > addr3);
+			CHECK_FALSE(addr1 >= addr3);
+
+			CHECK_FALSE(addr2 == addr3);
+			CHECK(addr2 != addr3);
+			CHECK(addr2 < addr3);
+			CHECK(addr2 <= addr3);
+			CHECK_FALSE(addr2 > addr3);
+			CHECK_FALSE(addr2 >= addr3);
+		}
+
+		THEN("their values correspond") {
+			CHECK(*addr1 == 0_uhalf);
+			CHECK(*addr2 == 1_uhalf);
+			CHECK(*addr3 == 1_uhalf);
+
+			CHECK(mem.load(0) == 0_uhalf);
+			CHECK(mem.load(3) == 1_uhalf);
+			CHECK(mem.load(7) == 1_uhalf);
+		}
+
+		AND_WHEN("one is modified, the memory is changed as well") {
+			*addr1 = 2_uhalf;
+
+			CHECK(*addr1 == 2_uhalf);
+			CHECK(*addr2 == 1_uhalf);
+			CHECK(*addr3 == 1_uhalf);
+
+			CHECK(mem.load(0) == 2_uhalf);
+			CHECK(mem.load(3) == 1_uhalf);
+			CHECK(mem.load(7) == 1_uhalf);
+		}
+	}
+}
