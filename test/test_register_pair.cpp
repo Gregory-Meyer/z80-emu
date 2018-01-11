@@ -3,20 +3,20 @@
 #include <iostream>
 
 auto immutable_test() -> void {
-	const auto reg = z80::RegisterPair{ z80::SignedRegister_t{ 4080 } };
+	const auto reg = z80::RegisterPair{ z80::WordT{ 4080 } };
 
-	const auto as_unsigned = static_cast<z80::UnsignedRegister_t>(reg);
-	const auto as_signed = static_cast<z80::SignedRegister_t>(reg);
+	const auto as_unsigned = static_cast<z80::UnsignedWordT>(reg);
+	const auto as_signed = static_cast<z80::WordT>(reg);
 
 	const auto upper_as_unsigned =
-		static_cast<z80::UnsignedHalfRegister_t>(reg.upper());
+		static_cast<z80::UnsignedHalfWordT>(reg.upper());
 	const auto upper_as_signed =
-		static_cast<z80::SignedHalfRegister_t>(reg.upper());
+		static_cast<z80::HalfWordT>(reg.upper());
 
 	const auto lower_as_unsigned =
-		static_cast<z80::UnsignedHalfRegister_t>(reg.lower());
+		static_cast<z80::UnsignedHalfWordT>(reg.lower());
 	const auto lower_as_signed =
-		static_cast<z80::SignedHalfRegister_t>(reg.lower());
+		static_cast<z80::HalfWordT>(reg.lower());
 
 	std::cout << as_unsigned << std::endl;
 	std::cout << as_signed << std::endl;
@@ -27,22 +27,22 @@ auto immutable_test() -> void {
 }
 
 auto mutable_test() -> void {
-	auto reg = z80::RegisterPair{ z80::SignedRegister_t{ 4080 } };
+	auto reg = z80::RegisterPair{ z80::WordT{ 4080 } };
 
-	reg.upper() = z80::SignedHalfRegister_t{ -1 };
+	reg.upper() = z80::HalfWordT{ -1 };
 
-	const auto as_unsigned = static_cast<z80::UnsignedRegister_t>(reg);
-	const auto as_signed = static_cast<z80::SignedRegister_t>(reg);
+	const auto as_unsigned = static_cast<z80::UnsignedWordT>(reg);
+	const auto as_signed = static_cast<z80::WordT>(reg);
 
 	const auto upper_as_unsigned =
-		static_cast<z80::UnsignedHalfRegister_t>(reg.upper());
+		static_cast<z80::UnsignedHalfWordT>(reg.upper());
 	const auto upper_as_signed =
-		static_cast<z80::SignedHalfRegister_t>(reg.upper());
+		static_cast<z80::HalfWordT>(reg.upper());
 
 	const auto lower_as_unsigned =
-		static_cast<z80::UnsignedHalfRegister_t>(reg.lower());
+		static_cast<z80::UnsignedHalfWordT>(reg.lower());
 	const auto lower_as_signed =
-		static_cast<z80::SignedHalfRegister_t>(reg.lower());
+		static_cast<z80::HalfWordT>(reg.lower());
 
 	std::cout << as_unsigned << std::endl;
 	std::cout << as_signed << std::endl;

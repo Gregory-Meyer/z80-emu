@@ -1,7 +1,9 @@
 #ifndef GREGJM_Z80_MEMORY_UNIT_H
 #define GREGJM_Z80_MEMORY_UNIT_H
 
+#include "exceptions.h"
 #include "register_pair.h"
+#include "types.hpp"
 
 #include <cstddef>
 #include <vector>
@@ -12,90 +14,132 @@ namespace z80 {
 // the z80 has 16 bits of byte-addressable address space
 class MemoryUnit {
 public:
-	using Value_t = std::byte;
-	using Size_t = UnsignedRegister_t;
-	using Difference_t = SignedRegister_t;
+	using ValueT = u8;
+	using SizeT = UnsignedWordT;
+	using DifferenceT = WordT;
 
-	// pointer-like type
-	// does not have pointer arithmetic
-	class Address {
-	public:
-		Address(MemoryUnit &memory, const Size_t address) noexcept;
+	// immutable reference into a MemoryUnit
+	class Address;
 
-		auto operator=(const std::nullptr_t) -> Address&;
+	// mutable reference into a MemoryUnit
+	class MutableAddress;
 
-		auto operator*() const -> Value_t&;
+	// immutable reference to a contiguous slice of memory in a MemoryUnit
+	class Slice;
 
-		friend auto operator==(const Address lhs,
-		                       const Address rhs) noexcept -> bool;
+	// mutable reference to a contiguous slice of memory in a MemoryUnit
+	class MutableSlice;
 
-		friend auto operator!=(const Address lhs,
-		                       const Address rhs) noexcept -> bool;
+	constexpr auto DEFAULT_SIZE = static_cast<usize>(1 << 16);
 
-		friend auto operator<(const Address lhs,
-		                      const Address rhs) noexcept -> bool;
+	MemoryUnit() = default;
 
-		friend auto operator<=(const Address lhs,
-		                       const Address rhs) noexcept -> bool;
+	explicit MemoryUnit(SizeT size);
 
-		friend auto operator>(const Address lhs,
-		                      const Address rhs) noexcept -> bool;
+//	// returns a MutableAddress object corresponding to the passed value
+//	// will throw NonmemberException if the value is not
+//	// owned by this MemoryUnit
+//	auto address_of(ValueT &value) -> MutableAddress;
+//
+//	// returns an Address object corresponding to the passed value
+//	// will throw NonmemberException if the value is not
+//	// owned by this MemoryUnit
+//	auto address_of(const ValueT &value) const -> Address;
 
-		friend auto operator>=(const Address lhs,
-		                       const Address rhs) noexcept -> bool;
+	// returns a MutableAddress referring to the specified address
+	// in this MemoryUnit
+	// throws OutOfBoundsException if address >= size()
+	auto make_address(SizeT address) -> MutableAddress;
 
-	private:
-		MemoryUnit *memory_ = nullptr;
-		Size_t address_ = 0;
-	};
+	// returns an Address referring to the specified address
+	// in this MemoryUnit
+	// throws OutOfBoundsException if address >= size()
+	auto make_address(SizeT address) const -> Address;
 
-	// slice of memory; an address and a size, in essence
-	// does not own its memory
-	class Slice {
-	public:
-		Slice(MemoryUnit &memory, const Size_t start,
-		      const Size_t size) noexcept;
+	// returns a MutableSlice referring to the slice of memory with
+	// specified bounds [lower, upper)
+	// throws OutOfBoundsException if lower > upper or upper > size()
+	auto make_slice(SizeT lower, SizeT upper) -> MutableSlice;
 
-		auto operator[](const Size_t index) const noexcept -> Value_t&;
+	// returns a Slice referring to the slice of memory with
+	// specified bounds [lower, upper)
+	// throws OutOfBoundsException if lower > upper or upper > size()
+	auto make_slice(SizeT lower, SizeT upper) const -> Slice;
 
-		auto at(const Size_t index) const -> Value_t&;
+	// returns the byte at the given address by value
+	// throws OutOfBoundsException if address >= size()
+	auto load(SizeT address) const -> ValueT;
 
-		auto front() const noexcept -> Value_t&;
+	// writes to the given address
+	// throws OutOfBoundsException if address >= size()
+	auto store(SizeT address, ValueT data) -> void;
 
-		auto back() const noexcept -> Value_t&;
-
-		auto empty() const noexcept -> bool;
-
-		auto size() const noexcept -> Size_t;
-
-		auto max_size() const noexcept -> Size_t;
-
-		auto fill() const noexcept -> void;
-
-		auto swap(Slice &other) noexcept -> void;
-
-	private:
-		MemoryUnit *memory_ = nullptr;
-		Size_t address_ = 0;
-		Size_t size_ = 0;
-	};
-
-	auto address_of(Value_t &data);
+	// returns the number of bytes in this MemoryUnit
+	auto size() const noexcept -> SizeT;
 
 private:
+	auto data() noexcept -> ValueT*;
+
+	auto data() const noexcept -> const ValueT*;
+
+//	auto is_member(const ValueT &value) const noexcept -> bool;
+
+	std::vector<ValueT> data_ = std::vector<ValueT>(DEFAULT_SIZE, 0);
 };
 
-auto operator==(const Address lhs, const Address rhs) noexcept -> bool;
+class MemoryUnit::Address {
+public:
+	friend MemoryUnit;
 
-auto operator!=(const Address lhs, const Address rhs) noexcept -> bool;
+private:
+	explicit Address(const MemoryUnit &parent) noexcept;
 
-auto operator<(const Address lhs, const Address rhs) noexcept -> bool;
+	Address(const MemoryUnit &parent, SizeT address) noexcept;
 
-auto operator<=(const Address lhs, const Address rhs) noexcept -> bool;
+	const MemoryUnit *parent_ = nullptr;
+	SizeT address_ = 0;
+};
 
-auto operator>(const Address lhs, const Address rhs) noexcept -> bool;
+class MemoryUnit::MutableAddress {
+public:
+	friend MemoryUnit;
 
-auto operator>=(const Address lhs, const Address rhs) noexcept -> bool;
+private:
+	explicit MutableAddress(MemoryUnit &parent) noexcept;
+
+	MutableAddress(MemoryUnit &parent, SizeT address) noexcept;
+
+	MemoryUnit *parent_ = nullptr;
+	SizeT address_ = 0;
+};
+
+class MemoryUnit::Slice {
+public:
+	friend MemoryUnit;
+
+private:
+	explicit Slice(const MemoryUnit &parent) noexcept;
+
+	Slice(const MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
+
+	const MemoryUnit *parent_ = nullptr;
+	SizeT begin_ = 0;
+	SizeT end_ = 0;
+};
+
+class MemoryUnit::MutableSlice {
+public:
+	friend MemoryUnit;
+
+private:
+	explicit MutableSlice(MemoryUnit &parent) noexcept;
+
+	MutableSlice(MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
+
+	MemoryUnit *parent_ = nullptr;
+	SizeT begin_ = 0;
+	SizeT end_ = 0;
+};
 
 } // namespace z80
 

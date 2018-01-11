@@ -20,11 +20,11 @@ private:
 	Registers alternate_;
 	RegisterPair index_y_;
 	RegisterPair index_x_;
-	UnsignedRegister_t stack_pointer_;
-	UnsignedHalfRegister_t interrupt_;
-	UnsignedHalfRegister_t refresh_;
-	UnsignedRegister_t program_counter_;
-	UnsignedHalfRegister_t flags_;
+	UnsignedWordT stack_pointer_;
+	UnsignedHalfWordT interrupt_;
+	UnsignedHalfWordT refresh_;
+	UnsignedWordT program_counter_;
+	UnsignedHalfWordT flags_;
 };
 
 } // namespace z80

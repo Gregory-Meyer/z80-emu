@@ -5,15 +5,12 @@
 #ifndef GREGJM_Z80_REGISTER_PAIR_H
 #define GREGJM_Z80_REGISTER_PAIR_H
 
+#include "types.hpp"
+
 #include <cstdint>
 #include <atomic>
 
 namespace z80 {
-
-using SignedRegister_t = std::int16_t;
-using SignedHalfRegister_t = std::int8_t;
-using UnsignedRegister_t = std::uint16_t;
-using UnsignedHalfRegister_t = std::uint8_t;
 
 class RegisterPair {
 public:
@@ -31,23 +28,23 @@ public:
 
 		auto operator=(UpperReference &&other) -> UpperReference& = delete;
 
-		auto operator=(const UnsignedHalfRegister_t value) noexcept
+		auto operator=(UnsignedHalfWordT value) noexcept
 			-> UpperReference&;
 
-		auto operator=(const SignedHalfRegister_t value) noexcept
+		auto operator=(HalfWordT value) noexcept
 			-> UpperReference&;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		explicit operator UnsignedHalfWordT() const noexcept;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
+		explicit operator HalfWordT() const noexcept;
 
-		auto set(const UnsignedHalfRegister_t value) noexcept -> void;
+		auto set(UnsignedHalfWordT value) noexcept -> void;
 
-		auto set(const SignedHalfRegister_t value) noexcept -> void;
+		auto set(HalfWordT value) noexcept -> void;
 
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
+		auto get_unsigned() const noexcept -> UnsignedHalfWordT;
 
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> HalfWordT;
 
 	private:
 		explicit UpperReference(RegisterPair &parent) noexcept;
@@ -71,13 +68,13 @@ public:
 		auto operator=(ConstUpperReference &&other)
 			-> ConstUpperReference& = delete;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		explicit operator UnsignedHalfWordT() const noexcept;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
+		explicit operator HalfWordT() const noexcept;
 
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
+		auto get_unsigned() const noexcept -> UnsignedHalfWordT;
 
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> HalfWordT;
 
 	private:
 		explicit ConstUpperReference(const RegisterPair &parent) noexcept;
@@ -99,23 +96,23 @@ public:
 
 		auto operator=(LowerReference &&other) -> LowerReference& = delete;
 
-		auto operator=(const UnsignedHalfRegister_t value) noexcept
+		auto operator=(UnsignedHalfWordT value) noexcept
 			-> LowerReference&;
 
-		auto operator=(const SignedHalfRegister_t value) noexcept
+		auto operator=(HalfWordT value) noexcept
 			-> LowerReference&;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		explicit operator UnsignedHalfWordT() const noexcept;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
+		explicit operator HalfWordT() const noexcept;
 
-		auto set(const UnsignedHalfRegister_t value) noexcept -> void;
+		auto set(UnsignedHalfWordT value) noexcept -> void;
 
-		auto set(const SignedHalfRegister_t value) noexcept -> void;
+		auto set(HalfWordT value) noexcept -> void;
 
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
+		auto get_unsigned() const noexcept -> UnsignedHalfWordT;
 
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> HalfWordT;
 
 	private:
 		explicit LowerReference(RegisterPair &parent) noexcept;
@@ -133,13 +130,13 @@ public:
 
 		ConstLowerReference(ConstLowerReference &&other) = default;
 
-		explicit operator UnsignedHalfRegister_t() const noexcept;
+		explicit operator UnsignedHalfWordT() const noexcept;
 
-		explicit operator SignedHalfRegister_t() const noexcept;
+		explicit operator HalfWordT() const noexcept;
 
-		auto get_unsigned() const noexcept -> UnsignedHalfRegister_t;
+		auto get_unsigned() const noexcept -> UnsignedHalfWordT;
 
-		auto get_signed() const noexcept -> SignedHalfRegister_t;
+		auto get_signed() const noexcept -> HalfWordT;
 
 	private:
 		explicit ConstLowerReference(const RegisterPair &parent) noexcept;
@@ -153,41 +150,38 @@ public:
 
 	RegisterPair(RegisterPair &&other) noexcept;
 
-	explicit RegisterPair(const UnsignedRegister_t value) noexcept;
+	explicit RegisterPair(UnsignedWordT value) noexcept;
 
-	explicit RegisterPair(const SignedRegister_t value) noexcept;
+	explicit RegisterPair(WordT value) noexcept;
 
-	RegisterPair(const UnsignedHalfRegister_t upper_value,
-				 const UnsignedHalfRegister_t lower_value) noexcept;
+	RegisterPair(UnsignedHalfWordT upper_value,
+	             UnsignedHalfWordT lower_value) noexcept;
 
-	RegisterPair(const UnsignedHalfRegister_t upper_value,
-				 const SignedHalfRegister_t lower_value) noexcept;
+	RegisterPair(UnsignedHalfWordT upper_value, HalfWordT lower_value) noexcept;
 
-	RegisterPair(const SignedHalfRegister_t upper_value,
-				 const UnsignedHalfRegister_t lower_value) noexcept;
+	RegisterPair(HalfWordT upper_value, UnsignedHalfWordT lower_value) noexcept;
 
-	RegisterPair(const SignedHalfRegister_t upper_value,
-				 const SignedHalfRegister_t lower_value) noexcept;
+	RegisterPair(HalfWordT upper_value, HalfWordT lower_value) noexcept;
 
 	auto operator=(const RegisterPair &other) noexcept -> RegisterPair&;
 
 	auto operator=(RegisterPair &&other) noexcept -> RegisterPair&;
 
-	auto operator=(const UnsignedRegister_t value) noexcept -> RegisterPair&;
+	auto operator=(UnsignedWordT value) noexcept -> RegisterPair&;
 
-	auto operator=(const SignedRegister_t value) noexcept -> RegisterPair&;
+	auto operator=(WordT value) noexcept -> RegisterPair&;
 
-	explicit operator UnsignedRegister_t() const noexcept;
+	explicit operator UnsignedWordT() const noexcept;
 
-	explicit operator SignedRegister_t() const noexcept;
+	explicit operator WordT() const noexcept;
 
-	auto set(const UnsignedRegister_t value) noexcept -> void;
+	auto set(UnsignedWordT value) noexcept -> void;
 
-	auto set(const SignedRegister_t value) noexcept -> void;
+	auto set(WordT value) noexcept -> void;
 
-	auto get_unsigned() const noexcept -> UnsignedRegister_t;
+	auto get_unsigned() const noexcept -> UnsignedWordT;
 
-	auto get_signed() const noexcept -> SignedRegister_t;
+	auto get_signed() const noexcept -> WordT;
 
 	auto upper() noexcept -> UpperReference;
 
@@ -198,23 +192,23 @@ public:
 	auto lower() const noexcept -> ConstLowerReference;
 
 private:
-	auto set_upper(const UnsignedHalfRegister_t value) noexcept -> void;
+	auto set_upper(UnsignedHalfWordT value) noexcept -> void;
 
-	auto set_upper(const SignedHalfRegister_t value) noexcept -> void;
+	auto set_upper(HalfWordT value) noexcept -> void;
 
-	auto set_lower(const UnsignedHalfRegister_t value) noexcept -> void;
+	auto set_lower(UnsignedHalfWordT value) noexcept -> void;
 
-	auto set_lower(const SignedHalfRegister_t value) noexcept -> void;
+	auto set_lower(HalfWordT value) noexcept -> void;
 
-	auto get_upper_unsigned() const noexcept -> UnsignedHalfRegister_t;
+	auto get_upper_unsigned() const noexcept -> UnsignedHalfWordT;
 
-	auto get_upper_signed() const noexcept -> SignedHalfRegister_t;
+	auto get_upper_signed() const noexcept -> HalfWordT;
 
-	auto get_lower_unsigned() const noexcept -> UnsignedHalfRegister_t;
+	auto get_lower_unsigned() const noexcept -> UnsignedHalfWordT;
 
-	auto get_lower_signed() const noexcept -> SignedHalfRegister_t;
+	auto get_lower_signed() const noexcept -> HalfWordT;
 
-	std::atomic<UnsignedRegister_t> data_;
+	std::atomic<UnsignedWordT> data_;
 };
 
 } // namespace z80
