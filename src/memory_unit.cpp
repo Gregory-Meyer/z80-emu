@@ -1,5 +1,8 @@
 #include "memory_unit.h"
 
+#include <algorithm>
+#include <memory>
+
 using namespace z80::literals;
 
 z80::MemoryUnit::MemoryUnit(SizeT size) : data_(size, 0) { }
@@ -82,6 +85,32 @@ auto z80::MemoryUnit::data() const noexcept -> const ValueT* {
 	return data_.data();
 }
 
+auto z80::MemoryUnit::operator[](const SizeT address) noexcept -> ValueT& {
+	return data_[address];
+}
+
+auto z80::MemoryUnit::operator[](
+	const SizeT address
+) const noexcept -> const ValueT& {
+	return data_[address];
+}
+
+auto z80::MemoryUnit::at(const SizeT address) -> ValueT& {
+	if (address >= size()) {
+		throw OutOfBoundsException{ "MemoryUnit::at" };
+	}
+
+	return (*this)[address];
+}
+
+auto z80::MemoryUnit::at(const SizeT address) const -> const ValueT& {
+	if (address >= size()) {
+		throw OutOfBoundsException{ "MemoryUnit::at" };
+	}
+
+	return (*this)[address];
+}
+
 //auto z80::MemoryUnit::is_member(
 //	const MemoryUnit::ValueT &value
 //) const noexcept -> bool {
@@ -89,3 +118,123 @@ auto z80::MemoryUnit::data() const noexcept -> const ValueT* {
 //
 //	return address >= data() and address <= data() + size();
 //}
+
+z80::MemoryUnit::Address::Address(
+	const MemoryUnit::MutableAddress mut_addr
+) noexcept : parent_{ mut_addr.parent_ }, address_{ mut_addr.address_ } { }
+
+auto z80::MemoryUnit::Address::swap(Address &other) noexcept -> void {
+	using std::swap;
+
+	swap(parent_, other.parent_);
+	swap(address_, other.address_);
+}
+
+auto z80::MemoryUnit::Address::operator*() const noexcept -> const ValueT& {
+	return (*parent_)[address_];
+}
+
+auto z80::MemoryUnit::Address::operator->() const noexcept -> const ValueT* {
+	return std::addressof((*parent_)[address_]);
+}
+
+z80::MemoryUnit::Address::operator bool() const noexcept {
+	return static_cast<bool>(parent_);
+}
+
+z80::MemoryUnit::Address::Address(const MemoryUnit &parent,
+                                  SizeT address) noexcept
+	: parent_{ &parent },
+	  address_{ address }
+{ }
+
+auto z80::MemoryUnit::MutableAddress::swap(
+	z80::MemoryUnit::MutableAddress &other
+) noexcept -> void {
+	using std::swap;
+
+	swap(parent_, other.parent_);
+	swap(address_, other.address_);
+}
+
+auto z80::MemoryUnit::MutableAddress::operator*() const noexcept -> ValueT& {
+	return (*parent_)[address_];
+}
+
+auto z80::MemoryUnit::MutableAddress::operator->() const noexcept -> ValueT* {
+	return std::addressof((*parent_)[address_]);
+}
+
+z80::MemoryUnit::MutableAddress::operator bool() const noexcept {
+	return static_cast<bool>(parent_);
+}
+
+z80::MemoryUnit::MutableAddress::MutableAddress(MemoryUnit &parent,
+                                                SizeT address) noexcept
+	: parent_{ &parent }, address_{ address }
+{ }
+
+auto z80::swap(MemoryUnit::Address &lhs,
+               MemoryUnit::Address &rhs) noexcept -> void {
+	lhs.swap(rhs);
+}
+
+auto z80::operator==(const MemoryUnit::Address lhs,
+                     const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ == rhs.address_);
+}
+
+auto z80::operator!=(const MemoryUnit::Address lhs,
+                     const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ != rhs.parent_) or (lhs.address_ != rhs.address_);
+}
+
+auto z80::operator<(const MemoryUnit::Address lhs,
+                    const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ < rhs.address_);
+}
+
+auto z80::operator<=(const MemoryUnit::Address lhs,
+                     const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ <= rhs.address_);
+}
+
+auto z80::operator>(const MemoryUnit::Address lhs,
+                    const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ > rhs.address_);
+}
+
+auto z80::operator>=(const MemoryUnit::Address lhs,
+                     const MemoryUnit::Address rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ >= rhs.address_);
+}
+
+auto z80::operator==(z80::MemoryUnit::MutableAddress lhs,
+                     z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ == rhs.address_);
+}
+
+auto z80::operator!=(z80::MemoryUnit::MutableAddress lhs,
+                     z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ != rhs.parent_) or (lhs.address_ != rhs.address_);
+}
+
+auto z80::operator<(z80::MemoryUnit::MutableAddress lhs,
+                    z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ < rhs.address_);
+}
+
+auto z80::operator<=(z80::MemoryUnit::MutableAddress lhs,
+                     z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ <= rhs.address_);
+}
+
+auto z80::operator>(z80::MemoryUnit::MutableAddress lhs,
+                    z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ > rhs.address_);
+}
+
+auto z80::operator>=(z80::MemoryUnit::MutableAddress lhs,
+                     z80::MemoryUnit::MutableAddress rhs) noexcept -> bool {
+	return (lhs.parent_ == rhs.parent_) and (lhs.address_ >= rhs.address_);
+}

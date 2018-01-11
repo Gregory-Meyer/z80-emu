@@ -30,7 +30,7 @@ public:
 	// mutable reference to a contiguous slice of memory in a MemoryUnit
 	class MutableSlice;
 
-	constexpr auto DEFAULT_SIZE = static_cast<usize>(1 << 16);
+	static constexpr auto DEFAULT_SIZE = static_cast<usize>(1 << 16);
 
 	MemoryUnit() = default;
 
@@ -78,6 +78,14 @@ public:
 	auto size() const noexcept -> SizeT;
 
 private:
+	auto operator[](SizeT address) noexcept -> ValueT&;
+
+	auto operator[](SizeT address) const noexcept -> const ValueT&;
+
+	auto at(SizeT address) -> ValueT&;
+
+	auto at(SizeT address) const -> const ValueT&;
+
 	auto data() noexcept -> ValueT*;
 
 	auto data() const noexcept -> const ValueT*;
@@ -91,26 +99,77 @@ class MemoryUnit::Address {
 public:
 	friend MemoryUnit;
 
-private:
-	explicit Address(const MemoryUnit &parent) noexcept;
+	Address(MemoryUnit::MutableAddress mut_addr) noexcept;
 
+	auto swap(Address &other) noexcept -> void;
+
+	auto operator*() const noexcept -> const ValueT&;
+
+	auto operator->() const noexcept -> const ValueT*;
+
+	explicit operator bool() const noexcept;
+
+	friend auto operator==(MemoryUnit::Address lhs,
+	                       MemoryUnit::Address rhs) noexcept -> bool;
+
+	friend auto operator!=(MemoryUnit::Address lhs,
+	                       MemoryUnit::Address rhs) noexcept -> bool;
+
+	friend auto operator<(MemoryUnit::Address lhs,
+	                      MemoryUnit::Address rhs) noexcept -> bool;
+
+	friend auto operator<=(MemoryUnit::Address lhs,
+	                       MemoryUnit::Address rhs) noexcept -> bool;
+
+	friend auto operator>(MemoryUnit::Address lhs,
+	                      MemoryUnit::Address rhs) noexcept -> bool;
+
+	friend auto operator>=(MemoryUnit::Address lhs,
+	                       MemoryUnit::Address rhs) noexcept -> bool;
+
+private:
 	Address(const MemoryUnit &parent, SizeT address) noexcept;
 
 	const MemoryUnit *parent_ = nullptr;
-	SizeT address_ = 0;
+	SizeT address_;
 };
 
 class MemoryUnit::MutableAddress {
 public:
+	friend Address;
 	friend MemoryUnit;
 
-private:
-	explicit MutableAddress(MemoryUnit &parent) noexcept;
+	auto swap(MutableAddress &other) noexcept -> void;
 
+	auto operator*() const noexcept -> ValueT&;
+
+	auto operator->() const noexcept -> ValueT*;
+
+	explicit operator bool() const noexcept;
+
+	friend auto operator==(MemoryUnit::MutableAddress lhs,
+	                       MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+	friend auto operator!=(MemoryUnit::MutableAddress lhs,
+	                       MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+	friend auto operator<(MemoryUnit::MutableAddress lhs,
+	                      MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+	friend auto operator<=(MemoryUnit::MutableAddress lhs,
+	                       MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+	friend auto operator>(MemoryUnit::MutableAddress lhs,
+	                      MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+	friend auto operator>=(MemoryUnit::MutableAddress lhs,
+	                       MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+private:
 	MutableAddress(MemoryUnit &parent, SizeT address) noexcept;
 
 	MemoryUnit *parent_ = nullptr;
-	SizeT address_ = 0;
+	SizeT address_;
 };
 
 class MemoryUnit::Slice {
@@ -118,13 +177,11 @@ public:
 	friend MemoryUnit;
 
 private:
-	explicit Slice(const MemoryUnit &parent) noexcept;
-
 	Slice(const MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
 
 	const MemoryUnit *parent_ = nullptr;
-	SizeT begin_ = 0;
-	SizeT end_ = 0;
+	SizeT begin_;
+	SizeT end_;
 };
 
 class MemoryUnit::MutableSlice {
@@ -132,14 +189,54 @@ public:
 	friend MemoryUnit;
 
 private:
-	explicit MutableSlice(MemoryUnit &parent) noexcept;
-
 	MutableSlice(MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
 
 	MemoryUnit *parent_ = nullptr;
-	SizeT begin_ = 0;
-	SizeT end_ = 0;
+	SizeT begin_;
+	SizeT end_;
 };
+
+auto swap(MemoryUnit::Address &lhs, MemoryUnit::Address &rhs) noexcept -> void;
+
+auto swap(MemoryUnit::MutableAddress &lhs,
+          MemoryUnit::MutableAddress &rhs) noexcept -> void;
+
+auto operator==(MemoryUnit::Address lhs,
+                MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator!=(MemoryUnit::Address lhs,
+                MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator<(MemoryUnit::Address lhs,
+               MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator<=(MemoryUnit::Address lhs,
+                MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator>(MemoryUnit::Address lhs,
+               MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator>=(MemoryUnit::Address lhs,
+                MemoryUnit::Address rhs) noexcept -> bool;
+
+auto operator==(MemoryUnit::MutableAddress lhs,
+                MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+auto operator!=(MemoryUnit::MutableAddress lhs,
+                MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+auto operator<(MemoryUnit::MutableAddress lhs,
+               MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+auto operator<=(MemoryUnit::MutableAddress lhs,
+                MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+auto operator>(MemoryUnit::MutableAddress lhs,
+               MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
+auto operator>=(MemoryUnit::MutableAddress lhs,
+                MemoryUnit::MutableAddress rhs) noexcept -> bool;
+
 
 } // namespace z80
 
