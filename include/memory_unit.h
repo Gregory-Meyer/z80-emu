@@ -6,6 +6,8 @@
 #include "types.hpp"
 
 #include <cstddef>
+
+#include <iterator>
 #include <vector>
 
 namespace z80 {
@@ -95,10 +97,12 @@ private:
 	std::vector<ValueT> data_ = std::vector<ValueT>(DEFAULT_SIZE, 0);
 };
 
+// immutable reference into a MemoryUnit
 class MemoryUnit::Address {
 public:
 	friend MemoryUnit;
 
+	// implicit constructor
 	Address(MemoryUnit::MutableAddress mut_addr) noexcept;
 
 	auto swap(Address &other) noexcept -> void;
@@ -134,6 +138,7 @@ private:
 	SizeT address_;
 };
 
+// mutable reference into a MemoryUnit
 class MemoryUnit::MutableAddress {
 public:
 	friend Address;
@@ -176,6 +181,27 @@ class MemoryUnit::Slice {
 public:
 	friend MemoryUnit;
 
+	using iterator = const ValueT*;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+
+	Slice(MutableSlice mut_slice);
+
+	auto begin() const noexcept -> iterator;
+
+	auto end() const noexcept -> iterator;
+
+	auto rbegin() const noexcept -> reverse_iterator;
+
+	auto rend() const noexcept -> reverse_iterator;
+
+	auto empty() const noexcept -> bool;
+
+	auto size() const noexcept -> SizeT;
+
+	auto operator[](const SizeT offset) const noexcept -> const ValueT&;
+
+	auto at(const SizeT offset) const -> const ValueT&;
+
 private:
 	Slice(const MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
 
@@ -187,6 +213,26 @@ private:
 class MemoryUnit::MutableSlice {
 public:
 	friend MemoryUnit;
+	friend Slice;
+
+	using iterator = ValueT*;
+	using reverse_iterator = std::reverse_iterator<iterator>;
+
+	auto begin() const noexcept -> iterator;
+
+	auto end() const noexcept -> iterator;
+
+	auto rbegin() const noexcept -> reverse_iterator;
+
+	auto rend() const noexcept -> reverse_iterator;
+
+	auto empty() const noexcept -> bool;
+
+	auto size() const noexcept -> SizeT;
+
+	auto operator[](const SizeT offset) const noexcept -> ValueT&;
+
+	auto at(const SizeT offset) const -> ValueT&;
 
 private:
 	MutableSlice(MemoryUnit &parent, SizeT lower, SizeT upper) noexcept;
