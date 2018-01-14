@@ -2,6 +2,8 @@
 
 #include "memory_unit.h"
 
+#include <numeric>
+
 using namespace z80::literals;
 
 SCENARIO("Basic MemoryUnit functionality", "[MemoryUnit]") {
@@ -131,6 +133,43 @@ SCENARIO("MutableAddress semantics", "[MutableAddress]") {
 			CHECK(mem.load(0) == 2_uhalf);
 			CHECK(mem.load(3) == 1_uhalf);
 			CHECK(mem.load(7) == 1_uhalf);
+		}
+	}
+}
+
+SCENARIO("MutableSlice semantics", "[MutableSlice]") {
+	GIVEN("a MemoryUnit and some MutableSlices") {
+		auto mem = z80::MemoryUnit{ 32 };
+
+		auto arr = mem.make_slice(3, 8);
+
+		CHECK(arr.size() == 5);
+		CHECK_FALSE(arr.empty());
+
+		THEN("when modified, the underling memory is modified") {
+			std::iota(arr.begin(), arr.end(), 1);
+
+			auto i = 1_u8;
+
+			for (const auto val : arr) {
+				CHECK(val == i);
+				++i;
+			}
+
+			CHECK(arr.front() == mem.load(3));
+			CHECK(arr.back() == mem.load(7));
+
+			for (z80::UnsignedWordT i = 0; i < arr.size(); ++i) {
+				CHECK(arr[i]
+				      == mem.load(static_cast<z80::MemoryUnit::SizeT>(i + 3)));
+			}
+		}
+
+		THEN("when indexed out of range, an exception is thrown") {
+			CHECK_THROWS(arr.at(-1));
+			CHECK_NOTHROW(arr.at(0));
+			CHECK_NOTHROW(arr.at(4));
+			CHECK_THROWS(arr.at(5));
 		}
 	}
 }

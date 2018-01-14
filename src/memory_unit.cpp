@@ -276,7 +276,7 @@ auto z80::MemoryUnit::MutableSlice::at(const SizeT pos) const -> ValueT& {
 }
 
 auto z80::MemoryUnit::MutableSlice::operator[](const SizeT pos) const -> ValueT& {
-	return (*parent_)[pos];
+	return (*parent_)[static_cast<SizeT>(begin_ + pos)];
 }
 
 auto z80::MemoryUnit::MutableSlice::front() const -> ValueT& {
