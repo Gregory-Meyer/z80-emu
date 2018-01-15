@@ -159,9 +159,9 @@ SCENARIO("MutableSlice semantics", "[MutableSlice]") {
 			CHECK(arr.front() == mem.load(3));
 			CHECK(arr.back() == mem.load(7));
 
-			for (z80::UnsignedWordT i = 0; i < arr.size(); ++i) {
-				CHECK(arr[i]
-				      == mem.load(static_cast<z80::MemoryUnit::SizeT>(i + 3)));
+			for (z80::UnsignedWordT j = 0; j < arr.size(); ++j) {
+				CHECK(arr[j]
+				      == mem.load(static_cast<z80::MemoryUnit::SizeT>(j + 3)));
 			}
 		}
 
