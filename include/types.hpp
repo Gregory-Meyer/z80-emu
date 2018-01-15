@@ -24,6 +24,8 @@ using HalfWordT = i8;
 using UnsignedWordT = u16;
 using UnsignedHalfWordT = u8;
 
+using MathWordT = u32;
+
 namespace literals {
 
 constexpr auto operator""_u8(const unsigned long long value) noexcept -> u8 {
