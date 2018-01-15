@@ -30,6 +30,8 @@ add_library(exceptions src/exceptions.cpp)
 add_library(memory_unit src/memory_unit.cpp)
 target_link_libraries(memory_unit exceptions)
 
+add_library(utility src/utility.cpp)
+
 add_executable(emulator src/emulator.cpp)
 target_link_libraries(emulator timer)
 add_dependencies(emulator timer)
@@ -46,3 +48,6 @@ add_executable(test_literals test/test_literals.cpp)
 
 add_executable(test_memory_unit test/catch_main.cpp test/test_memory_unit.cpp)
 target_link_libraries(test_memory_unit memory_unit)
+
+add_executable(test_utility test/catch_main.cpp test/test_utility.cpp)
+target_link_libraries(test_utility utility)

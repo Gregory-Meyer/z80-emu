@@ -1,5 +1,3 @@
-// some fun literals
-
 #ifndef GREGJM_Z80_TYPES_HPP
 #define GREGJM_Z80_TYPES_HPP
 
